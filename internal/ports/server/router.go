@@ -8,6 +8,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// SetupRouter configures and returns the Gin router with all routes
 func SetupRouter(photoUC usecase.PhotoUseCase) *gin.Engine {
 	router := gin.Default()
 
@@ -27,7 +28,6 @@ func SetupRouter(photoUC usecase.PhotoUseCase) *gin.Engine {
 		}
 	}
 
-	// Swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router

@@ -17,6 +17,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Run initializes and starts the application
+// It sets up configuration, database, use cases, and HTTP server
+// Returns error if any initialization step fails
 func Run() error {
 	cfg, err := config.Load()
 	if err != nil {

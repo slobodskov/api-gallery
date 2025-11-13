@@ -2,6 +2,7 @@ package domain
 
 import "time"
 
+// Photo represents a photo entity in the system
 type Photo struct {
 	ID        int       `json:"id" db:"id"`
 	Filename  string    `json:"filename" db:"filename"`
@@ -11,8 +12,4 @@ type Photo struct {
 	Width     int       `json:"width" db:"width"`
 	Height    int       `json:"height" db:"height"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
-}
-
-type PhotoUploadRequest struct {
-	File []byte `json:"file" binding:"required"`
 }

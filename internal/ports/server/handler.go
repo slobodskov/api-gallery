@@ -8,10 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PhotoHandler handles HTTP requests for photo operations
 type PhotoHandler struct {
 	photoUseCase usecase.PhotoUseCase
 }
 
+// NewPhotoHandler creates a new instance of PhotoHandler
 func NewPhotoHandler(uc usecase.PhotoUseCase) *PhotoHandler {
 	return &PhotoHandler{photoUseCase: uc}
 }
@@ -34,7 +36,6 @@ func (h *PhotoHandler) UploadPhoto(c *gin.Context) {
 		return
 	}
 
-	// Читаем файл
 	uploadedFile, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot open file"})
@@ -77,11 +78,11 @@ func (h *PhotoHandler) GetPhotos(c *gin.Context) {
 }
 
 // DeletePhoto godoc
-// @Summary Удалить фото
-// @Description Удаляет фото по ID
+// @Summary Delete photo
+// @Description Delete photo by ID
 // @Tags photos
 // @Produce json
-// @Param id path int true "ID фото"
+// @Param id path int true "Photo ID"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -104,11 +105,11 @@ func (h *PhotoHandler) DeletePhoto(c *gin.Context) {
 }
 
 // ServePreview godoc
-// @Summary Получить превью фото
-// @Description Возвращает превью изображение
+// @Summary Get photo preview
+// @Description Returns preview image
 // @Tags photos
 // @Produce image/jpeg
-// @Param filename path string true "Имя файла превью"
+// @Param filename path string true "Preview filename"
 // @Success 200
 // @Failure 404 {object} map[string]string
 // @Router /photos/preview/{filename} [get]

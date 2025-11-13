@@ -13,27 +13,30 @@ import (
 	"github.com/nfnt/resize"
 )
 
+// PhotoRepository implements the IPhoto interface with file system storage
 type PhotoRepository struct {
 	data *photoDB
 }
 
+// NewPhotoRepository creates a new instance of PhotoRepository
 func NewPhotoRepository(db *sql.DB) *PhotoRepository {
 	return &PhotoRepository{
 		data: newPhotoDB(db),
 	}
 }
 
+// UploadPhoto processes photo upload, creates preview, and stores in database
 func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Photo, error) {
 	img, format, err := image.Decode(bytes.NewReader(file))
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем директории если не существуют
+	// Create directories if they don't exist
 	os.MkdirAll("uploads/original", 0755)
 	os.MkdirAll("uploads/preview", 0755)
 
-	// Генерируем уникальное имя файла
+	// Generate unique filename
 	ext := filepath.Ext(filename)
 	if ext == "" {
 		switch format {
@@ -61,7 +64,7 @@ func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Pho
 		return nil, err
 	}
 
-	// Создаем превью
+	// Create preview
 	preview := resize.Resize(300, 0, img, resize.Lanczos3)
 	previewPath := filepath.Join("uploads", "preview", previewFilename)
 	previewFile, err := os.Create(previewPath)
@@ -75,12 +78,12 @@ func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Pho
 		return nil, err
 	}
 
-	// Получаем размеры изображения
+	// Get image dimensions
 	bounds := img.Bounds()
 	width := bounds.Dx()
 	height := bounds.Dy()
 
-	// Сохраняем в БД
+	// Save to database
 	photo := &domain.Photo{
 		Filename:  filename,
 		Original:  originalPath,
@@ -109,6 +112,7 @@ func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Pho
 	return response, nil
 }
 
+// GetPhotos retrieves all photos from the database with formatted preview URLs
 func (p *PhotoRepository) GetPhotos() ([]domain.Photo, error) {
 	photos, err := p.data.FindAll()
 	if err != nil {
@@ -133,6 +137,7 @@ func (p *PhotoRepository) GetPhotos() ([]domain.Photo, error) {
 	return responses, nil
 }
 
+// DeletePhoto removes a photo from both database and file system
 func (p *PhotoRepository) DeletePhoto(id int) error {
 	photo, err := p.data.FindByID(id)
 	if err != nil {
