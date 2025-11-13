@@ -1,16 +1,12 @@
-FROM golang:1.21-alpine
+FROM golang:1.25
+
+RUN apt-get update && apt-get install -y gcc libc6-dev
+
+ENV CGO_ENABLED=1
 
 WORKDIR /app
-
-COPY go.mod go.sum ./
-RUN go mod download
-
 COPY . .
-
-RUN go build -o main ./cmd/server
-
-RUN mkdir -p uploads/original uploads/preview
-
-EXPOSE 8080
+RUN go mod download
+RUN go build -o main .
 
 CMD ["./main"]

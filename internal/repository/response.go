@@ -18,7 +18,9 @@ type PhotoRepository struct {
 }
 
 func NewPhotoRepository(db *sql.DB) *PhotoRepository {
-	return &PhotoRepository{data: newPhotoDB(db)}
+	return &PhotoRepository{
+		data: newPhotoDB(db),
+	}
 }
 
 func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Photo, error) {
@@ -31,6 +33,7 @@ func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Pho
 	os.MkdirAll("uploads/original", 0755)
 	os.MkdirAll("uploads/preview", 0755)
 
+	// Генерируем уникальное имя файла
 	ext := filepath.Ext(filename)
 	if ext == "" {
 		switch format {
@@ -58,6 +61,7 @@ func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Pho
 		return nil, err
 	}
 
+	// Создаем превью
 	preview := resize.Resize(300, 0, img, resize.Lanczos3)
 	previewPath := filepath.Join("uploads", "preview", previewFilename)
 	previewFile, err := os.Create(previewPath)
@@ -71,10 +75,12 @@ func (p *PhotoRepository) UploadPhoto(file []byte, filename string) (*domain.Pho
 		return nil, err
 	}
 
+	// Получаем размеры изображения
 	bounds := img.Bounds()
 	width := bounds.Dx()
 	height := bounds.Dy()
 
+	// Сохраняем в БД
 	photo := &domain.Photo{
 		Filename:  filename,
 		Original:  originalPath,

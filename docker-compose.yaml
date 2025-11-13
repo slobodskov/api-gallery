@@ -6,7 +6,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./uploads:/app/uploads
       - ./gallery.db:/app/gallery.db
+      - ./.env:/app/.env
     environment:
       - GIN_MODE=release

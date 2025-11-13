@@ -2,18 +2,23 @@ package database
 
 import (
 	"database/sql"
-	"log"
+	"log/slog"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
-func InitDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "./gallery.db")
+// InitDB initializes the SQLite database connection and creates necessary tables
+// Returns database connection instance or error if initialization fails
+func InitDB(dbPath string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем таблицу
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
 	query := `
     CREATE TABLE IF NOT EXISTS photos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +36,6 @@ func InitDB() (*sql.DB, error) {
 		return nil, err
 	}
 
-	log.Println("Database initialized successfully")
+	slog.Info("Database initialized successfully", "path", dbPath)
 	return db, nil
 }

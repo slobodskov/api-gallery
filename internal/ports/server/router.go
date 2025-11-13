@@ -2,6 +2,7 @@ package server
 
 import (
 	"api-gallery/internal/usecase"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -10,14 +11,11 @@ import (
 func SetupRouter(photoUC usecase.PhotoUseCase) *gin.Engine {
 	router := gin.Default()
 
-	// Middleware
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	// Handlers
 	photoHandler := NewPhotoHandler(photoUC)
 
-	// Routes
 	api := router.Group("/api")
 	{
 		photos := api.Group("/photos")

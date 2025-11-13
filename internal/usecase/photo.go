@@ -5,22 +5,22 @@ import (
 	"api-gallery/internal/repository"
 )
 
-type photoUseCase struct {
-	repo PhotoUseCase
+type PhotoUseCase struct {
+	repo repository.IPhoto
 }
 
-func NewPhotoUseCase(repo *repository.PhotoRepository) *photoUseCase {
-	return &photoUseCase{repo: repo}
+func NewPhotoUseCase(repo repository.IPhoto) *PhotoUseCase {
+	return &PhotoUseCase{repo: repo}
 }
 
-func (uc *photoUseCase) UploadPhoto(file []byte, filename string) (*domain.Photo, error) {
+func (uc *PhotoUseCase) UploadPhoto(file []byte, filename string) (*domain.Photo, error) {
 	return uc.repo.UploadPhoto(file, filename)
 }
 
-func (uc *photoUseCase) GetPhotos() ([]domain.Photo, error) {
+func (uc *PhotoUseCase) GetPhotos() ([]domain.Photo, error) {
 	return uc.repo.GetPhotos()
 }
 
-func (uc *photoUseCase) DeletePhoto(id int) error {
+func (uc *PhotoUseCase) DeletePhoto(id int) error {
 	return uc.repo.DeletePhoto(id)
 }

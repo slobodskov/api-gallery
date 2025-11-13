@@ -1,29 +1,72 @@
 package app
 
 import (
+	"api-gallery/config"
 	"api-gallery/internal/adapters/database"
+	"api-gallery/internal/infrastructure/logger"
 	"api-gallery/internal/ports/server"
 	"api-gallery/internal/repository"
 	"api-gallery/internal/usecase"
-	"log"
+	"context"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Run() error {
-
-	db, err := database.InitDB()
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("Failed to initialize database:", err)
+		return err
+	}
+
+	log := logger.New()
+
+	db, err := database.InitDB(cfg.DatabasePath)
+	if err != nil {
+		log.Error("Failed to initialize database", "error", err)
+		return err
 	}
 	defer db.Close()
 
 	photoRepo := repository.NewPhotoRepository(db)
 	photoUC := usecase.NewPhotoUseCase(photoRepo)
 
-	router := server.SetupRouter(photoUC)
-
-	log.Println("Server starting on :8080")
-	if err := router.Run(":8080"); err != nil {
-		log.Fatal("Failed to start server:", err)
+	if cfg.GinMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
 	}
+
+	router := server.SetupRouter(*photoUC)
+
+	srv := &http.Server{
+		Addr:    ":" + cfg.ServerPort,
+		Handler: router,
+	}
+
+	go func() {
+		log.Info("Server starting", "port", cfg.ServerPort, "mode", cfg.GinMode)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("Failed to start server", "error", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("Server forced to shutdown", "error", err)
+		return err
+	}
+
+	log.Info("Server exited successfully")
 	return nil
 }
